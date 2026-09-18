@@ -5,7 +5,7 @@ import java.util.List;
 
 public class JugadorDAO {
 	
-    public void crear(Jugador jugador) throws SQLException {
+    public void crear(PokemonJugador jugador) throws SQLException {
         String sql = "INSERT INTO jugador (nombre) VALUES (?)";
         try (Connection conn = ConexionBD.Conectar();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -21,7 +21,7 @@ public class JugadorDAO {
         }
     }
 
-    public Jugador obtenerPorId(int idJugador) throws SQLException {
+    public PokemonJugador obtenerPorId(int idJugador) throws SQLException {
         String sql = "SELECT * FROM jugador WHERE id_jugador = ?";
         try (Connection conn = ConexionBD.Conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -39,7 +39,7 @@ public class JugadorDAO {
         return null;
     }
 
-    public void actualizar(Jugador jugador) throws SQLException {
+    public void actualizar(PokemonJugador jugador) throws SQLException {
         String sql = "UPDATE jugador SET nombre = ? WHERE id_jugador = ?";
         try (Connection conn = ConexionBD.Conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
