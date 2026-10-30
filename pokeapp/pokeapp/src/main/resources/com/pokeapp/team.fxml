@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+ fx:controller="com.pokeapp.controller.TeamController" style="-fx-background-color: #edf2f4;">
+ <top><VBox spacing="6" style="-fx-background-color: #263238; -fx-padding: 18;">
+  <Label text="ARMÁ TU EQUIPO" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+  <Label text="Elegí 6 de los 12 Pokémon disponibles. Los otros 6 serán tu rival." style="-fx-text-fill: #ecf0f1;"/>
+ </VBox></top>
+ <center><ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;"><VBox fx:id="listaPokemones" spacing="5" style="-fx-padding: 18;"/></ScrollPane></center>
+ <bottom><VBox spacing="10" style="-fx-padding: 15; -fx-background-color: white;">
+  <HBox spacing="12" alignment="CENTER_LEFT"><Label text="Nombre del entrenador:"/><TextField fx:id="nombreEntrenador" promptText="Entrenador" prefWidth="200"/><Label fx:id="contador" style="-fx-font-weight: bold; -fx-font-size: 16px;"/></HBox>
+  <Label fx:id="mensaje" style="-fx-text-fill: #c0392b;"/>
+  <HBox spacing="12"><Button text="Volver al menú" onAction="#volverMenu"/><Button text="Confirmar equipo y combatir" onAction="#confirmarEquipo" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/></HBox>
+ </VBox></bottom>
+</BorderPane>

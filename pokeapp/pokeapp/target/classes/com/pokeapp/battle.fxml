@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+ fx:controller="com.pokeapp.controller.BattleController" style="-fx-background-color: #edf2f4;">
+ <top><VBox spacing="5" style="-fx-background-color: #263238; -fx-padding: 16;">
+  <Label text="COMBATE POKÉMON" style="-fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+  <Label fx:id="tituloResultado" text="Derrotá a los 6 Pokémon rivales" style="-fx-text-fill: #ecf0f1;"/>
+ </VBox></top>
+ <center><VBox spacing="14" style="-fx-padding: 20;">
+  <GridPane hgap="18" vgap="12">
+   <columnConstraints><ColumnConstraints percentWidth="50"/><ColumnConstraints percentWidth="50"/></columnConstraints>
+   <VBox spacing="7" style="-fx-background-color: white; -fx-padding: 16; -fx-background-radius: 10;" GridPane.columnIndex="0">
+    <Label text="POKÉMON RIVAL" style="-fx-font-weight: bold; -fx-text-fill: #c0392b;"/><Label fx:id="rivalNombre" style="-fx-font-size: 20px; -fx-font-weight: bold;"/><Label fx:id="rivalVida"/>
+   </VBox>
+   <VBox spacing="7" style="-fx-background-color: white; -fx-padding: 16; -fx-background-radius: 10;" GridPane.columnIndex="1">
+    <Label text="TU POKÉMON" style="-fx-font-weight: bold; -fx-text-fill: #2471a3;"/><Label fx:id="jugadorNombre" style="-fx-font-size: 20px; -fx-font-weight: bold;"/><Label fx:id="jugadorVida"/>
+   </VBox>
+  </GridPane>
+  <HBox spacing="18" VBox.vgrow="ALWAYS">
+   <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 10;" HBox.hgrow="ALWAYS"><Label text="TU EQUIPO" style="-fx-font-weight: bold;"/><VBox fx:id="listaEquipoJugador" spacing="5"/></VBox>
+   <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 10;" HBox.hgrow="ALWAYS"><Label text="EQUIPO RIVAL" style="-fx-font-weight: bold;"/><VBox fx:id="listaEquipoRival" spacing="5"/></VBox>
+  </HBox>
+  <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 10;">
+   <Label text="Elegí qué Pokémon usar"/><HBox spacing="10"><ComboBox fx:id="selectorPokemon" prefWidth="230"/><Button fx:id="botonAtacar" text="ATACAR" onAction="#atacar" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 22;"/></HBox>
+   <TextArea fx:id="estado" editable="false" wrapText="true" prefRowCount="3" promptText="Acá aparecerá el resultado de cada turno."/>
+  </VBox>
+ </VBox></center>
+ <bottom><HBox alignment="CENTER_RIGHT" style="-fx-padding: 12;"><Button text="Volver al menú" onAction="#volverMenu"/></HBox></bottom>
+</BorderPane>
