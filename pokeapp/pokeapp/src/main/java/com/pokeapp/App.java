@@ -12,10 +12,11 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 900, 650);
-        stage.setTitle("PokeApp");
-        stage.setMinWidth(760);
-        stage.setMinHeight(560);
+        scene = new Scene(loadFXML("primary"), 1050, 760);
+        scene.getStylesheets().add(App.class.getResource("/com/pokeapp/gameboy.css").toExternalForm());
+        stage.setTitle("Pokémon Fury");
+        stage.setMinWidth(900);
+        stage.setMinHeight(680);
         stage.setScene(scene);
         stage.show();
     }

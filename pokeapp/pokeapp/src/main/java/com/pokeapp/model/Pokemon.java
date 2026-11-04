@@ -1,5 +1,6 @@
 package com.pokeapp.model;
 
+/** Datos comunes de los doce Pokémon disponibles en Pokémon Fury. */
 public class Pokemon {
     protected int idPokemon;
     protected String nombre;
@@ -11,11 +12,15 @@ public class Pokemon {
     protected int ataque;
     protected int defensa;
     protected int velocidad;
+    protected String spriteKey;
+    protected Movimiento[] movimientos = new Movimiento[4];
 
-    public Pokemon() { }
+    public Pokemon() {
+    }
 
     public Pokemon(int idPokemon, String nombre, String tipoPrimario, String tipoSecundario,
-                   int nivel, int hpMaximo, int ataque, int defensa, int velocidad) {
+                   int nivel, int hpMaximo, int ataque, int defensa, int velocidad,
+                   String spriteKey, Movimiento... movimientos) {
         this.idPokemon = idPokemon;
         this.nombre = nombre;
         this.tipoPrimario = tipoPrimario;
@@ -26,16 +31,27 @@ public class Pokemon {
         this.ataque = ataque;
         this.defensa = defensa;
         this.velocidad = velocidad;
+        this.spriteKey = spriteKey;
+        setMovimientos(movimientos);
+    }
+
+    public Pokemon copiar() {
+        Pokemon copia = new Pokemon(idPokemon, nombre, tipoPrimario, tipoSecundario,
+                nivel, hpMaximo, ataque, defensa, velocidad, spriteKey);
+        copia.setMovimientos(movimientos);
+        return copia;
     }
 
     public int recibirDanio(int danio) {
-        int danioReal = Math.max(1, danio - defensa / 4);
+        int danioReal = Math.max(0, danio);
+        int vidaAnterior = hpActual;
         hpActual = Math.max(0, hpActual - danioReal);
-        return danioReal;
+        return Math.min(danioReal, vidaAnterior);
     }
 
     public boolean estaDerrotado() { return hpActual <= 0; }
     public void recuperar() { hpActual = hpMaximo; }
+
     public int getIdPokemon() { return idPokemon; }
     public void setIdPokemon(int idPokemon) { this.idPokemon = idPokemon; }
     public String getNombre() { return nombre; }
@@ -56,5 +72,25 @@ public class Pokemon {
     public void setDefensa(int defensa) { this.defensa = defensa; }
     public int getVelocidad() { return velocidad; }
     public void setVelocidad(int velocidad) { this.velocidad = velocidad; }
-    @Override public String toString() { return nombre + " (" + tipoPrimario + (tipoSecundario == null ? "" : "/" + tipoSecundario) + ")"; }
+    public String getSpriteKey() { return spriteKey; }
+    public void setSpriteKey(String spriteKey) { this.spriteKey = spriteKey; }
+    public Movimiento[] getMovimientos() { return movimientos; }
+
+    public void setMovimientos(Movimiento... movimientos) {
+        this.movimientos = new Movimiento[4];
+        if (movimientos == null) return;
+        for (int i = 0; i < Math.min(4, movimientos.length); i++) {
+            this.movimientos[i] = movimientos[i] == null ? null : movimientos[i].copiar();
+        }
+    }
+
+    public String getTiposTexto() {
+        return tipoSecundario == null || tipoSecundario.trim().isEmpty()
+                ? tipoPrimario : tipoPrimario + " / " + tipoSecundario;
+    }
+
+    @Override
+    public String toString() {
+        return nombre + " (" + getTiposTexto() + ")";
+    }
 }

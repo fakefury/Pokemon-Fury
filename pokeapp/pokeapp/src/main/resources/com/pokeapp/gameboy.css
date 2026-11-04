@@ -1,0 +1,206 @@
+.root {
+    -fx-font-family: "Monospaced";
+    -fx-background-color: #182a20;
+}
+.game-root {
+    -fx-background-color: #182a20;
+}
+.menu-shell {
+    -fx-background-color: #344b3a;
+    -fx-padding: 28;
+    -fx-spacing: 24;
+    -fx-background-radius: 16;
+    -fx-border-color: #0f1e16;
+    -fx-border-width: 7;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.45), 18, 0.15, 0, 9);
+}
+.game-screen {
+    -fx-background-color: #9bbc0f;
+    -fx-padding: 28 42 30 42;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 7;
+    -fx-min-width: 500;
+    -fx-min-height: 310;
+}
+.console-caption, .footer-caption {
+    -fx-text-fill: #306230;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.game-title-small {
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 29px;
+    -fx-font-weight: bold;
+}
+.game-title {
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 76px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(one-pass-box, #8bac0f, 0, 0, 4, 4);
+}
+.game-subtitle {
+    -fx-text-fill: #306230;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 2px;
+}
+.pixel-tagline {
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.game-button {
+    -fx-background-color: #306230;
+    -fx-text-fill: #e7f2c5;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 11 18 11 18;
+    -fx-background-radius: 0;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 2;
+    -fx-cursor: hand;
+}
+.game-button:hover { -fx-background-color: #4b7a36; }
+.game-button:pressed { -fx-translate-y: 2px; }
+.game-button:disabled { -fx-opacity: 0.45; }
+.primary-game-button { -fx-background-color: #0f380f; -fx-text-fill: #f0f8d0; }
+.primary-game-button:hover { -fx-background-color: #306230; }
+.secondary-button { -fx-background-color: #6b7f42; }
+.screen-header {
+    -fx-background-color: #294331;
+    -fx-padding: 15 22 13 22;
+    -fx-border-color: #0b1b12;
+    -fx-border-width: 0 0 4 0;
+}
+.header-brand {
+    -fx-text-fill: #d8e8a2;
+    -fx-font-size: 20px;
+    -fx-font-weight: 900;
+}
+.header-chip {
+    -fx-background-color: #9bbc0f;
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 7 10 7 10;
+}
+.header-description {
+    -fx-text-fill: #c6d6a0;
+    -fx-font-size: 11px;
+}
+.team-scroll { -fx-background-color: #24382b; -fx-background: #24382b; }
+.team-scroll > .viewport { -fx-background-color: #24382b; }
+.team-content { -fx-padding: 18 22 22 22; }
+.section-title, .battle-panel-title {
+    -fx-text-fill: #d9e8a8;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.team-counter {
+    -fx-background-color: #9bbc0f;
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 7 12 7 12;
+}
+.pokemon-card {
+    -fx-background-color: #dce9ae;
+    -fx-border-color: #526c3b;
+    -fx-border-width: 3;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 5;
+    -fx-cursor: hand;
+}
+.pokemon-card:hover { -fx-background-color: #edf6c9; -fx-border-color: #0f380f; }
+.pokemon-card:selected {
+    -fx-background-color: #a8c65a;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 5;
+}
+.pokemon-card-name { -fx-text-fill: #0f380f; -fx-font-size: 13px; -fx-font-weight: bold; }
+.pokemon-card-type { -fx-text-fill: #45633b; -fx-font-size: 10px; }
+.bottom-bar {
+    -fx-background-color: #334b39;
+    -fx-padding: 12 20 14 20;
+    -fx-border-color: #0b1b12;
+    -fx-border-width: 4 0 0 0;
+}
+.field-label, .bottom-hint { -fx-text-fill: #dce9ae; -fx-font-size: 11px; -fx-font-weight: bold; }
+.bottom-hint { -fx-text-fill: #a9c47d; }
+.retro-input {
+    -fx-background-color: #e7f0c4;
+    -fx-text-fill: #0f380f;
+    -fx-prompt-text-fill: #67804d;
+    -fx-background-radius: 0;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 2;
+    -fx-font-family: "Monospaced";
+}
+.feedback-label { -fx-text-fill: #dce9ae; -fx-font-size: 10px; }
+.battle-center { -fx-padding: 12 18 18 18; }
+.battle-field-frame {
+    -fx-background-color: #9bbc0f;
+    -fx-padding: 5;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 4;
+}
+.battle-field { -fx-background-color: #9bbc0f; }
+.battle-hud {
+    -fx-background-color: rgba(245, 249, 216, 0.94);
+    -fx-border-color: #0f380f;
+    -fx-border-width: 3;
+    -fx-padding: 8 12 8 12;
+}
+.hud-name { -fx-text-fill: #0f380f; -fx-font-size: 13px; -fx-font-weight: bold; }
+.hud-hp { -fx-text-fill: #306230; -fx-font-size: 11px; -fx-font-weight: bold; }
+.battle-lower { -fx-spacing: 12; }
+.battle-command-panel, .party-panel {
+    -fx-background-color: #344b3a;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 3;
+    -fx-padding: 10;
+}
+.battle-panel-subtitle { -fx-text-fill: #bdd094; -fx-font-size: 10px; }
+.battle-log {
+    -fx-control-inner-background: #e1edb6;
+    -fx-text-fill: #18351e;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 11px;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+}
+.battle-log .content { -fx-background-color: #e1edb6; }
+.move-button {
+    -fx-background-color: #dce9ae;
+    -fx-text-fill: #0f380f;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-border-color: #526c3b;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-cursor: hand;
+}
+.move-button:hover { -fx-background-color: #edf6c9; -fx-border-color: #0f380f; }
+.move-button:disabled { -fx-opacity: 0.45; }
+.battle-team-card {
+    -fx-background-color: #dce9ae;
+    -fx-border-color: #526c3b;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 3;
+    -fx-cursor: hand;
+}
+.battle-team-card:selected { -fx-background-color: #a8c65a; -fx-border-color: #0f380f; -fx-border-width: 3; }
+.battle-team-card:disabled { -fx-opacity: 0.45; }
+.battle-team-name { -fx-text-fill: #0f380f; -fx-font-size: 9px; -fx-font-weight: bold; }
+.battle-header { -fx-padding: 12 22 10 22; }
+
+.hp-bar { -fx-accent: #4b8f28; -fx-control-inner-background: #dce9ae; -fx-pref-height: 12px; }
+.hp-bar > .track { -fx-background-color: #6e7f53; -fx-background-radius: 0; }
+.hp-bar > .bar { -fx-background-color: #4b8f28; -fx-background-radius: 0; -fx-background-insets: 0; }

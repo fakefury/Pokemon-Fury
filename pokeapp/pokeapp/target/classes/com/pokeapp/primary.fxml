@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
- fx:controller="com.pokeapp.controller.PrimaryController" style="-fx-background-color: #17202a;">
- <center><VBox alignment="CENTER" spacing="22" style="-fx-background-color: #f4f6f7; -fx-background-radius: 18; -fx-padding: 45;" maxWidth="520">
-  <Label text="POKEAPP" style="-fx-font-size: 42px; -fx-font-weight: bold; -fx-text-fill: #263238;"/>
-  <Label text="Elegí tu equipo. Prepará tu estrategia. Ganá el combate." wrapText="true" style="-fx-font-size: 16px; -fx-text-fill: #566573;"/>
-  <Button text="NUEVA PARTIDA" onAction="#comenzar" prefWidth="240" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-background-color: #27ae60; -fx-text-fill: white; -fx-padding: 12 20;"/>
-  <Button text="SALIR" onAction="#salir" prefWidth="240" style="-fx-font-size: 14px; -fx-padding: 10 20;"/>
- </VBox></center>
+            fx:controller="com.pokeapp.controller.PrimaryController" styleClass="game-root">
+    <center>
+        <VBox alignment="CENTER" spacing="20" styleClass="menu-shell">
+            <VBox alignment="CENTER" spacing="8" styleClass="game-screen">
+                <Label text="GAME BOY COLOR" styleClass="console-caption" />
+                <Region prefHeight="8" />
+                <Label text="POKÉMON" styleClass="game-title-small" />
+                <Label text="FURY" styleClass="game-title" />
+                <Label text="EDICIÓN ENTRENADOR" styleClass="game-subtitle" />
+                <Region prefHeight="18" />
+                <Label text="ELIGE SEIS. LUCHA POR LA VICTORIA." styleClass="pixel-tagline" />
+            </VBox>
+            <VBox alignment="CENTER" spacing="12">
+                <Button text="▶  NUEVA PARTIDA" onAction="#comenzar" prefWidth="310" styleClass="game-button primary-game-button" />
+                <Button text="SALIR" onAction="#salir" prefWidth="310" styleClass="game-button" />
+            </VBox>
+            <Label text="© POKÉMON FURY · BATALLAS 6 VS 6" styleClass="footer-caption" />
+        </VBox>
+    </center>
 </BorderPane>

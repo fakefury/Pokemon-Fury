@@ -1,10 +1,12 @@
 package com.pokeapp.model;
+
 public class Combate {
     private Partida partida;
     private int turnoActual = 1;
     private String resultado = "EN_PROCESO";
     private int pokemonJugadorActual;
     private int pokemonRivalActual;
+
     public Partida getPartida() { return partida; }
     public void setPartida(Partida partida) { this.partida = partida; }
     public int getTurnoActual() { return turnoActual; }

@@ -1,30 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
- fx:controller="com.pokeapp.controller.BattleController" style="-fx-background-color: #edf2f4;">
- <top><VBox spacing="5" style="-fx-background-color: #263238; -fx-padding: 16;">
-  <Label text="COMBATE POKÉMON" style="-fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-  <Label fx:id="tituloResultado" text="Derrotá a los 6 Pokémon rivales" style="-fx-text-fill: #ecf0f1;"/>
- </VBox></top>
- <center><VBox spacing="14" style="-fx-padding: 20;">
-  <GridPane hgap="18" vgap="12">
-   <columnConstraints><ColumnConstraints percentWidth="50"/><ColumnConstraints percentWidth="50"/></columnConstraints>
-   <VBox spacing="7" style="-fx-background-color: white; -fx-padding: 16; -fx-background-radius: 10;" GridPane.columnIndex="0">
-    <Label text="POKÉMON RIVAL" style="-fx-font-weight: bold; -fx-text-fill: #c0392b;"/><Label fx:id="rivalNombre" style="-fx-font-size: 20px; -fx-font-weight: bold;"/><Label fx:id="rivalVida"/>
-   </VBox>
-   <VBox spacing="7" style="-fx-background-color: white; -fx-padding: 16; -fx-background-radius: 10;" GridPane.columnIndex="1">
-    <Label text="TU POKÉMON" style="-fx-font-weight: bold; -fx-text-fill: #2471a3;"/><Label fx:id="jugadorNombre" style="-fx-font-size: 20px; -fx-font-weight: bold;"/><Label fx:id="jugadorVida"/>
-   </VBox>
-  </GridPane>
-  <HBox spacing="18" VBox.vgrow="ALWAYS">
-   <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 10;" HBox.hgrow="ALWAYS"><Label text="TU EQUIPO" style="-fx-font-weight: bold;"/><VBox fx:id="listaEquipoJugador" spacing="5"/></VBox>
-   <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 10;" HBox.hgrow="ALWAYS"><Label text="EQUIPO RIVAL" style="-fx-font-weight: bold;"/><VBox fx:id="listaEquipoRival" spacing="5"/></VBox>
-  </HBox>
-  <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 14; -fx-background-radius: 10;">
-   <Label text="Elegí qué Pokémon usar"/><HBox spacing="10"><ComboBox fx:id="selectorPokemon" prefWidth="230"/><Button fx:id="botonAtacar" text="ATACAR" onAction="#atacar" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 22;"/></HBox>
-   <TextArea fx:id="estado" editable="false" wrapText="true" prefRowCount="3" promptText="Acá aparecerá el resultado de cada turno."/>
-  </VBox>
- </VBox></center>
- <bottom><HBox alignment="CENTER_RIGHT" style="-fx-padding: 12;"><Button text="Volver al menú" onAction="#volverMenu"/></HBox></bottom>
+            fx:controller="com.pokeapp.controller.BattleController" styleClass="game-root battle-root">
+    <top>
+        <VBox spacing="5" styleClass="screen-header battle-header">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="POKÉMON FURY" styleClass="header-brand" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="etiquetaTurno" text="TURNO 1" styleClass="header-chip" />
+            </HBox>
+            <Label text="BATALLA POKÉMON · TU EQUIPO VS. EQUIPO RIVAL" styleClass="header-description" />
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="10" styleClass="battle-center">
+            <StackPane styleClass="battle-field-frame">
+                <AnchorPane prefWidth="960" prefHeight="360" minHeight="360" maxHeight="360" styleClass="battle-field">
+                    <children>
+                        <ImageView fx:id="backgroundImage" fitWidth="960" fitHeight="360" preserveRatio="false"
+                                   smooth="false" AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0"
+                                   AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" />
+                        <VBox layoutX="20" layoutY="18" spacing="3" prefWidth="310" styleClass="battle-hud enemy-hud">
+                            <Label fx:id="rivalNombre" text="POKÉMON RIVAL" styleClass="hud-name" />
+                            <Label fx:id="rivalVida" text="HP  0 / 0" styleClass="hud-hp" />
+                            <ProgressBar fx:id="rivalBarraVida" progress="1.0" prefWidth="275" styleClass="hp-bar" />
+                        </VBox>
+                        <ImageView fx:id="rivalSprite" layoutX="630" layoutY="22" fitWidth="245" fitHeight="245"
+                                   preserveRatio="true" smooth="false" />
+                        <ImageView fx:id="jugadorSprite" layoutX="125" layoutY="123" fitWidth="250" fitHeight="250"
+                                   preserveRatio="true" smooth="false" />
+                        <VBox layoutX="660" layoutY="253" spacing="3" prefWidth="275" styleClass="battle-hud player-hud">
+                            <Label fx:id="jugadorNombre" text="TU POKÉMON" styleClass="hud-name" />
+                            <Label fx:id="jugadorVida" text="HP  0 / 0" styleClass="hud-hp" />
+                            <ProgressBar fx:id="jugadorBarraVida" progress="1.0" prefWidth="245" styleClass="hp-bar" />
+                        </VBox>
+                    </children>
+                </AnchorPane>
+            </StackPane>
+            <HBox spacing="12" alignment="TOP_CENTER" styleClass="battle-lower">
+                <VBox spacing="8" prefWidth="565" styleClass="battle-command-panel">
+                    <Label fx:id="tituloResultado" text="ELEGÍ UN MOVIMIENTO" styleClass="battle-panel-title" />
+                    <TextArea fx:id="estado" editable="false" wrapText="true" prefRowCount="3"
+                              styleClass="battle-log" />
+                    <GridPane hgap="8" vgap="8">
+                        <Button fx:id="btnMov1" text="MOVIMIENTO 1" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                                prefWidth="270" prefHeight="48" styleClass="move-button" />
+                        <Button fx:id="btnMov2" text="MOVIMIENTO 2" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                prefWidth="270" prefHeight="48" styleClass="move-button" />
+                        <Button fx:id="btnMov3" text="MOVIMIENTO 3" GridPane.columnIndex="0" GridPane.rowIndex="1"
+                                prefWidth="270" prefHeight="48" styleClass="move-button" />
+                        <Button fx:id="btnMov4" text="MOVIMIENTO 4" GridPane.columnIndex="1" GridPane.rowIndex="1"
+                                prefWidth="270" prefHeight="48" styleClass="move-button" />
+                    </GridPane>
+                    <Button fx:id="botonVolver" text="VOLVER AL MENÚ" onAction="#volverMenu"
+                            visible="false" managed="false" styleClass="game-button primary-game-button" />
+                </VBox>
+                <VBox spacing="7" prefWidth="330" styleClass="party-panel">
+                    <Label text="TU EQUIPO" styleClass="battle-panel-title" />
+                    <Label text="Elegí quién sale a combatir" styleClass="battle-panel-subtitle" />
+                    <GridPane fx:id="contenedorEquipo" hgap="7" vgap="7" alignment="CENTER" />
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
 </BorderPane>

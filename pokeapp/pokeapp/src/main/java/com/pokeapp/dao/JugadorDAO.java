@@ -1,5 +1,13 @@
 package com.pokeapp.dao;
+
 import com.pokeapp.model.Jugador;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class JugadorDAO {
-    public Jugador crearJugador(String nombre) { return new Jugador(1, nombre); }
+    private final AtomicInteger siguienteId = new AtomicInteger(1);
+
+    public Jugador crearJugador(String nombre) {
+        String nombreFinal = nombre == null || nombre.trim().isEmpty() ? "Entrenador" : nombre.trim();
+        return new Jugador(siguienteId.getAndIncrement(), nombreFinal);
+    }
 }
