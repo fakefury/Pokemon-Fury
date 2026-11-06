@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
@@ -16,54 +15,84 @@
         </VBox>
     </top>
     <center>
-        <VBox spacing="10" styleClass="battle-center">
-            <StackPane styleClass="battle-field-frame">
-                <AnchorPane prefWidth="960" prefHeight="360" minHeight="360" maxHeight="360" styleClass="battle-field">
+        <GridPane hgap="12" vgap="12" styleClass="battle-layout">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="74" />
+                <ColumnConstraints percentWidth="26" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="58" />
+                <RowConstraints percentHeight="42" />
+            </rowConstraints>
+
+            <!-- Campo de batalla: ocupa la zona grande izquierda. -->
+            <StackPane GridPane.columnIndex="0" GridPane.rowIndex="0"
+                        styleClass="battle-field-frame">
+                <AnchorPane prefWidth="960" prefHeight="360" styleClass="battle-field">
                     <children>
                         <ImageView fx:id="backgroundImage" fitWidth="960" fitHeight="360" preserveRatio="false"
                                    smooth="false" AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0"
                                    AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" />
+
                         <VBox layoutX="20" layoutY="18" spacing="3" prefWidth="310" styleClass="battle-hud enemy-hud">
                             <Label fx:id="rivalNombre" text="POKÉMON RIVAL" styleClass="hud-name" />
                             <Label fx:id="rivalVida" text="HP  0 / 0" styleClass="hud-hp" />
                             <ProgressBar fx:id="rivalBarraVida" progress="1.0" prefWidth="275" styleClass="hp-bar" />
                         </VBox>
+
                         <ImageView fx:id="rivalSprite" layoutX="630" layoutY="22" fitWidth="245" fitHeight="245"
                                    preserveRatio="true" smooth="false" />
+
                         <ImageView fx:id="jugadorSprite" layoutX="125" layoutY="123" fitWidth="250" fitHeight="250"
                                    preserveRatio="true" smooth="false" />
+
                         <VBox layoutX="660" layoutY="253" spacing="3" prefWidth="275" styleClass="battle-hud player-hud">
                             <Label fx:id="jugadorNombre" text="TU POKÉMON" styleClass="hud-name" />
                             <Label fx:id="jugadorVida" text="HP  0 / 0" styleClass="hud-hp" />
                             <ProgressBar fx:id="jugadorBarraVida" progress="1.0" prefWidth="245" styleClass="hp-bar" />
                         </VBox>
+
+                        <!-- Indicadores de daño: se muestran brevemente sobre el Pokémon afectado. -->
+                        <Label fx:id="indicadorDanioRival" text="" visible="false" managed="false"
+                               styleClass="damage-indicator damage-indicator-enemy"
+                               AnchorPane.leftAnchor="760" AnchorPane.topAnchor="275" />
+                        <Label fx:id="indicadorDanioJugador" text="" visible="false" managed="false"
+                               styleClass="damage-indicator damage-indicator-player"
+                               AnchorPane.leftAnchor="260" AnchorPane.topAnchor="205" />
                     </children>
                 </AnchorPane>
             </StackPane>
-            <HBox spacing="12" alignment="TOP_CENTER" styleClass="battle-lower">
-                <VBox spacing="8" prefWidth="565" styleClass="battle-command-panel">
-                    <Label fx:id="tituloResultado" text="ELEGÍ UN MOVIMIENTO" styleClass="battle-panel-title" />
-                    <TextArea fx:id="estado" editable="false" wrapText="true" prefRowCount="3"
-                              styleClass="battle-log" />
-                    <GridPane hgap="8" vgap="8">
-                        <Button fx:id="btnMov1" text="MOVIMIENTO 1" GridPane.columnIndex="0" GridPane.rowIndex="0"
-                                prefWidth="270" prefHeight="48" styleClass="move-button" />
-                        <Button fx:id="btnMov2" text="MOVIMIENTO 2" GridPane.columnIndex="1" GridPane.rowIndex="0"
-                                prefWidth="270" prefHeight="48" styleClass="move-button" />
-                        <Button fx:id="btnMov3" text="MOVIMIENTO 3" GridPane.columnIndex="0" GridPane.rowIndex="1"
-                                prefWidth="270" prefHeight="48" styleClass="move-button" />
-                        <Button fx:id="btnMov4" text="MOVIMIENTO 4" GridPane.columnIndex="1" GridPane.rowIndex="1"
-                                prefWidth="270" prefHeight="48" styleClass="move-button" />
-                    </GridPane>
-                    <Button fx:id="botonVolver" text="VOLVER AL MENÚ" onAction="#volverMenu"
-                            visible="false" managed="false" styleClass="game-button primary-game-button" />
-                </VBox>
-                <VBox spacing="7" prefWidth="330" styleClass="party-panel">
-                    <Label text="TU EQUIPO" styleClass="battle-panel-title" />
-                    <Label text="Elegí quién sale a combatir" styleClass="battle-panel-subtitle" />
-                    <GridPane fx:id="contenedorEquipo" hgap="7" vgap="7" alignment="CENTER" />
-                </VBox>
-            </HBox>
-        </VBox>
+
+            <!-- Equipo del jugador: se mueve a la zona azul de la referencia. -->
+            <VBox GridPane.columnIndex="1" GridPane.rowIndex="0" spacing="8" styleClass="party-panel party-panel-top">
+                <Label text="TU EQUIPO" styleClass="battle-panel-title" />
+                <Label text="Elegí quién sale a combatir" styleClass="battle-panel-subtitle" />
+                <GridPane fx:id="contenedorEquipo" hgap="7" vgap="7" alignment="CENTER" />
+            </VBox>
+
+            <!-- Registro de combate: zona amarilla. -->
+            <VBox GridPane.columnIndex="0" GridPane.rowIndex="1" spacing="8" styleClass="battle-command-panel">
+                <Label fx:id="tituloResultado" text="ELEGÍ UN MOVIMIENTO" styleClass="battle-panel-title" />
+                <TextArea fx:id="estado" editable="false" wrapText="true" prefRowCount="5"
+                          styleClass="battle-log" />
+                <Button fx:id="botonVolver" text="VOLVER AL MENÚ" onAction="#volverMenu"
+                        visible="false" managed="false" styleClass="game-button primary-game-button" />
+            </VBox>
+
+            <!-- Movimientos: zona violeta. -->
+            <VBox GridPane.columnIndex="1" GridPane.rowIndex="1" spacing="8" styleClass="move-panel">
+                <Label text="MOVIMIENTOS" styleClass="battle-panel-title" />
+                <GridPane hgap="8" vgap="8" styleClass="move-grid">
+                    <Button fx:id="btnMov1" text="MOVIMIENTO 1" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                            prefWidth="150" prefHeight="52" styleClass="move-button" />
+                    <Button fx:id="btnMov2" text="MOVIMIENTO 2" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                            prefWidth="150" prefHeight="52" styleClass="move-button" />
+                    <Button fx:id="btnMov3" text="MOVIMIENTO 3" GridPane.columnIndex="0" GridPane.rowIndex="1"
+                            prefWidth="150" prefHeight="52" styleClass="move-button" />
+                    <Button fx:id="btnMov4" text="MOVIMIENTO 4" GridPane.columnIndex="1" GridPane.rowIndex="1"
+                            prefWidth="150" prefHeight="52" styleClass="move-button" />
+                </GridPane>
+            </VBox>
+        </GridPane>
     </center>
 </BorderPane>

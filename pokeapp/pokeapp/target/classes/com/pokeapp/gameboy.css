@@ -260,3 +260,78 @@
     -fx-text-fill: #45633b;
     -fx-font-size: 10px;
 }
+
+
+/* ===== Batalla: distribución basada en la referencia de diseño ===== */
+.battle-layout {
+    -fx-padding: 12 18 18 18;
+    -fx-background-color: #182a20;
+}
+.battle-field-frame {
+    -fx-background-color: #9bbc0f;
+    -fx-padding: 5;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 4;
+}
+.battle-field {
+    -fx-background-color: #9bbc0f;
+}
+.party-panel-top,
+.move-panel,
+.battle-command-panel {
+    -fx-background-color: #344b3a;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 3;
+    -fx-padding: 10;
+}
+.party-panel-top {
+    -fx-alignment: TOP_CENTER;
+}
+.move-panel {
+    -fx-alignment: TOP_CENTER;
+}
+.battle-command-panel {
+    -fx-alignment: TOP_LEFT;
+}
+.battle-log {
+    -fx-control-inner-background: #e1edb6;
+    -fx-text-fill: #18351e;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-pref-height: 118px;
+    -fx-max-height: 118px;
+}
+.battle-log .content {
+    -fx-background-color: #e1edb6;
+    -fx-padding: 7px;
+}
+.battle-log .scroll-bar:vertical,
+.battle-log .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+}
+.move-grid {
+    -fx-alignment: CENTER;
+}
+.move-button {
+    -fx-font-size: 11px;
+    -fx-pref-height: 52px;
+}
+.damage-indicator {
+    -fx-text-fill: #fff7c7;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(one-pass-box, #0f380f, 3, 0.7, 2, 2);
+}
+.damage-indicator-enemy {
+    -fx-text-fill: #fff7c7;
+}
+.damage-indicator-player {
+    -fx-text-fill: #f4d7d7;
+}

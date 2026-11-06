@@ -105,11 +105,8 @@ public class CombateService {
 
                 if (atacante.estaDerrotado()) {
                     mensaje.append("\n¡").append(atacante.getNombre()).append(" quedó debilitado!");
-                    int siguiente = siguienteJugadorDisponible(combate, indiceJugador);
-                    combate.setPokemonJugadorActual(siguiente);
-                    if (siguiente < partida.getEquipoJugador().size()) {
-                        mensaje.append("\n¡Adelante, ").append(partida.getEquipoJugador().get(siguiente).getNombre()).append("!");
-                    }
+                    // No cambiamos automáticamente de Pokémon. La interfaz debe
+                    // pedir al jugador que elija quién entra después del debilitamiento.
                 }
             } else {
                 mensaje.append("\n").append(defensor.getNombre()).append(" no tiene movimientos con PP disponibles.");
@@ -117,7 +114,7 @@ public class CombateService {
         }
 
         combate.setTurnoActual(combate.getTurnoActual() + 1);
-        if (obtenerJugadorActivo(combate) == null) {
+        if (!hayJugadorDisponible(combate)) {
             combate.setResultado("DERROTA");
             mensaje.append("\nDERROTA. Tu equipo quedó debilitado.");
         }
@@ -157,17 +154,13 @@ public class CombateService {
                 agregarEfectividad(mensaje, multiplicador);
                 if (nuevoPokemon.estaDerrotado()) {
                     mensaje.append("\n¡").append(nuevoPokemon.getNombre()).append(" quedó debilitado!");
-                    int siguiente = siguienteJugadorDisponible(combate, nuevoIndice);
-                    combate.setPokemonJugadorActual(siguiente);
-                    if (siguiente < equipo.size()) {
-                        mensaje.append("\n¡Adelante, ").append(equipo.get(siguiente).getNombre()).append("!");
-                    }
+                    // El siguiente Pokémon se elige desde la interfaz después del popup.
                 }
             }
         }
 
         combate.setTurnoActual(combate.getTurnoActual() + 1);
-        if (obtenerJugadorActivo(combate) == null) {
+        if (!hayJugadorDisponible(combate)) {
             combate.setResultado("DERROTA");
             mensaje.append("\nDERROTA. Tu equipo quedó debilitado.");
         }
@@ -192,9 +185,16 @@ public class CombateService {
         if (indice >= 0 && indice < equipo.size() && !equipo.get(indice).estaDerrotado()) {
             return equipo.get(indice);
         }
-        int siguiente = siguienteJugadorDisponible(combate, indice - 1);
-        combate.setPokemonJugadorActual(siguiente);
-        return siguiente < equipo.size() ? equipo.get(siguiente) : null;
+        return null;
+    }
+
+    /** Indica si todavía queda al menos un Pokémon del jugador disponible. */
+    public boolean hayJugadorDisponible(Combate combate) {
+        if (combate == null || combate.getPartida() == null) return false;
+        for (PokemonJugador pokemon : combate.getPartida().getEquipoJugador()) {
+            if (!pokemon.estaDerrotado()) return true;
+        }
+        return false;
     }
 
     private void validarCombate(Combate combate) {

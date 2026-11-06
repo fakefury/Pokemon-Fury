@@ -17,6 +17,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +47,8 @@ public class BattleController {
     @FXML private Button btnMov3;
     @FXML private Button btnMov4;
     @FXML private Button botonVolver;
+    @FXML private Label indicadorDanioRival;
+    @FXML private Label indicadorDanioJugador;
 
     private final CombateService combateService = new CombateService();
     private final ToggleGroup grupoEquipo = new ToggleGroup();
@@ -65,7 +70,7 @@ public class BattleController {
         PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
         if (activo != null) indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
         seleccionarBotonActivo();
-        estado.setText("¡Un entrenador rival te desafía!\nElegí un movimiento para comenzar el combate.");
+        agregarEstado("¡Un entrenador rival te desafía!\nElegí un movimiento para comenzar el combate.");
         actualizarPantalla();
     }
 
@@ -111,9 +116,15 @@ public class BattleController {
 
     private void seleccionarPokemon(int indice) {
         if (indice < 0 || indice >= GameSession.getPartida().getEquipoJugador().size()) return;
+        PokemonJugador pokemonElegido = GameSession.getPartida().getEquipoJugador().get(indice);
         if (indice != indiceSeleccionado) {
+            PokemonJugador nuevo = pokemonElegido;
+            int hpAntes = nuevo.getHpActual();
             try {
-                estado.setText(combateService.cambiarPokemon(GameSession.getCombate(), indice));
+                agregarEstado(combateService.cambiarPokemon(GameSession.getCombate(), indice));
+
+                int danioCambio = Math.max(0, hpAntes - nuevo.getHpActual());
+                DamageIndicator.show(indicadorDanioJugador, danioCambio);
             } catch (PokemonDebilitadoException ex) {
                 mostrarExcepcion("POKÉMON DEBILITADO", ex.getMessage());
                 seleccionarBotonActivo();
@@ -131,6 +142,12 @@ public class BattleController {
         if (activo != null) indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
         seleccionarBotonActivo();
         actualizarPantalla();
+
+        if ((activo == null || pokemonElegido.estaDerrotado())
+                && "EN_PROCESO".equals(GameSession.getCombate().getResultado())) {
+            solicitarSiguientePokemon();
+        }
+
         comprobarFinalCombate();
     }
 
@@ -158,12 +175,32 @@ public class BattleController {
 
     private void ejecutarMovimiento(Movimiento movimiento) {
         if (!"EN_PROCESO".equals(GameSession.getCombate().getResultado())) return;
+
+        PokemonJugador jugadorAntes = combateService.obtenerJugadorActivo(GameSession.getCombate());
+        PokemonRival rivalAntes = combateService.obtenerRivalActivo(GameSession.getCombate());
+        int hpJugadorAntes = jugadorAntes == null ? 0 : jugadorAntes.getHpActual();
+        int hpRivalAntes = rivalAntes == null ? 0 : rivalAntes.getHpActual();
+
         try {
-            estado.setText(combateService.ejecutarMovimiento(GameSession.getCombate(), indiceSeleccionado, movimiento));
-            PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
-            if (activo != null) indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
-            seleccionarBotonActivo();
+            String mensaje = combateService.ejecutarMovimiento(
+                    GameSession.getCombate(), indiceSeleccionado, movimiento);
+            agregarEstado(mensaje);
+
+            int danioRival = rivalAntes == null ? 0 : Math.max(0, hpRivalAntes - rivalAntes.getHpActual());
+            int danioJugador = jugadorAntes == null ? 0 : Math.max(0, hpJugadorAntes - jugadorAntes.getHpActual());
+
+            DamageIndicator.show(indicadorDanioRival, danioRival);
+            DamageIndicator.show(indicadorDanioJugador, danioJugador);
+
             actualizarPantalla();
+
+            // El servicio ya no cambia automáticamente de Pokémon cuando el activo cae.
+            // Primero mostramos el popup y dejamos que el jugador decida.
+            if (jugadorAntes != null && jugadorAntes.estaDerrotado()
+                    && "EN_PROCESO".equals(GameSession.getCombate().getResultado())) {
+                solicitarSiguientePokemon();
+            }
+
             comprobarFinalCombate();
         } catch (PokemonDebilitadoException ex) {
             mostrarExcepcion("POKÉMON DEBILITADO", ex.getMessage());
@@ -174,6 +211,78 @@ public class BattleController {
         } catch (IllegalStateException ex) {
             mostrarExcepcion("COMBATE NO DISPONIBLE", ex.getMessage());
         }
+    }
+
+    /**
+     * Abre un popup con los Pokémon disponibles y obliga a elegir el siguiente.
+     * Si el rival debilita inmediatamente al elegido, se vuelve a pedir otro.
+     */
+    private void solicitarSiguientePokemon() {
+        while ("EN_PROCESO".equals(GameSession.getCombate().getResultado())
+                && !combateService.hayJugadorDisponible(GameSession.getCombate())) {
+            return;
+        }
+
+        while ("EN_PROCESO".equals(GameSession.getCombate().getResultado())) {
+            Dialog<PokemonJugador> dialogo = new Dialog<>();
+            dialogo.setTitle("POKÉMON DEBILITADO");
+            dialogo.setHeaderText("¡" + obtenerNombrePokemonDerrotado()
+                    + " quedó debilitado!\nElegí quién sale a combatir.");
+
+            Map<ButtonType, PokemonJugador> opciones = new HashMap<>();
+            for (PokemonJugador pokemon : GameSession.getPartida().getEquipoJugador()) {
+                if (pokemon.estaDerrotado()) continue;
+                ButtonType tipo = new ButtonType(
+                        pokemon.getNombre(), ButtonBar.ButtonData.OK_DONE);
+                opciones.put(tipo, pokemon);
+                dialogo.getDialogPane().getButtonTypes().add(tipo);
+            }
+
+            dialogo.getDialogPane().getButtonTypes().add(
+                    new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE));
+
+            dialogo.setResultConverter(boton -> opciones.get(boton));
+
+            Optional<PokemonJugador> elegido = dialogo.showAndWait();
+            if (!elegido.isPresent()) return;
+
+            PokemonJugador nuevo = elegido.get();
+            int indice = GameSession.getPartida().getEquipoJugador().indexOf(nuevo);
+            int hpAntes = nuevo.getHpActual();
+
+            try {
+                agregarEstado(combateService.cambiarPokemon(GameSession.getCombate(), indice));
+
+                int danioCambio = Math.max(0, hpAntes - nuevo.getHpActual());
+                DamageIndicator.show(indicadorDanioJugador, danioCambio);
+
+                PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
+                if (activo != null) {
+                    indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
+                }
+                seleccionarBotonActivo();
+                actualizarPantalla();
+
+                if (nuevo.estaDerrotado()) {
+                    continue;
+                }
+                return;
+            } catch (PokemonDebilitadoException ex) {
+                mostrarExcepcion("POKÉMON DEBILITADO", ex.getMessage());
+            } catch (SQLException ex) {
+                mostrarErrorBD(ex);
+                return;
+            }
+        }
+    }
+
+    private String obtenerNombrePokemonDerrotado() {
+        for (PokemonJugador pokemon : GameSession.getPartida().getEquipoJugador()) {
+            if (pokemon.estaDerrotado()) {
+                return pokemon.getNombre();
+            }
+        }
+        return "Tu Pokémon";
     }
 
     private void actualizarPantalla() {
@@ -231,6 +340,25 @@ public class BattleController {
         }
     }
 
+    /**
+     * Mantiene únicamente las últimas cinco líneas del registro.
+     * Así no aparece un scrollbar y el mensaje más reciente siempre queda visible.
+     */
+    private void agregarEstado(String mensaje) {
+        if (estado == null || mensaje == null || mensaje.isEmpty()) return;
+        String actual = estado.getText() == null ? "" : estado.getText().trim();
+        String combinado = actual.isEmpty() ? mensaje : actual + "\n" + mensaje;
+        String[] lineas = combinado.split("\\R");
+        int inicio = Math.max(0, lineas.length - 5);
+        StringBuilder ultimas = new StringBuilder();
+        for (int i = inicio; i < lineas.length; i++) {
+            if (ultimas.length() > 0) ultimas.append("\n");
+            ultimas.append(lineas[i]);
+        }
+        estado.setText(ultimas.toString());
+        estado.positionCaret(estado.getLength());
+    }
+
     private double ratioVida(int actual, int maximo) {
         return maximo <= 0 ? 0.0 : Math.max(0.0, Math.min(1.0, (double) actual / maximo));
     }
@@ -285,7 +413,7 @@ public class BattleController {
     }
 
     private void mostrarExcepcion(String titulo, String mensaje) {
-        estado.setText(mensaje);
+        agregarEstado(mensaje);
         Alert alerta = new Alert(Alert.AlertType.WARNING);
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);

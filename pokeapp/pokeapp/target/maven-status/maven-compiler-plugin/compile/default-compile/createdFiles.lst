@@ -4,6 +4,7 @@ com\pokeapp\controller\TeamController.class
 com\pokeapp\model\Partida.class
 com\pokeapp\GameSession.class
 com\pokeapp\exceptions\PokemonDebilitadoException.class
+com\pokeapp\App.class
 com\pokeapp\dao\EfectividadTipoDAO.class
 com\pokeapp\model\Movimiento.class
 com\pokeapp\controller\VictoryController.class
@@ -17,6 +18,7 @@ com\pokeapp\model\PokemonJugador.class
 com\pokeapp\dao\CombateDAO.class
 com\pokeapp\dao\JugadorDAO.class
 com\pokeapp\exceptions\PpInsuficienteException.class
+com\pokeapp\controller\DamageIndicator.class
 com\pokeapp\controller\PrimaryController.class
 com\pokeapp\config\ConexionBD.class
 com\pokeapp\model\Combate.class
