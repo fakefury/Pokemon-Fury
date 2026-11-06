@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 03-11-2026 a las 23:01:44
+-- Tiempo de generación: 05-11-2026 a las 23:54:06
 -- Versión del servidor: 5.6.34
 -- Versión de PHP: 7.1.11
 
@@ -102,6 +102,24 @@ INSERT INTO `efectividad_tipo` (`tipo_atacante`, `tipo_defensor`, `multiplicador
 ('Volador', 'Planta', '0.5'),
 ('Volador', 'Roca', '2.0'),
 ('Volador', 'Tierra', '0.5');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `entrenador`
+--
+
+CREATE TABLE `entrenador` (
+  `id` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `pokemon1` int(11) DEFAULT NULL,
+  `pokemon2` int(11) DEFAULT NULL,
+  `pokemon3` int(11) DEFAULT NULL,
+  `pokemon4` int(11) DEFAULT NULL,
+  `pokemon5` int(11) DEFAULT NULL,
+  `pokemon6` int(11) DEFAULT NULL,
+  `campeon` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -214,20 +232,37 @@ ALTER TABLE `efectividad_tipo`
   ADD PRIMARY KEY (`tipo_atacante`,`tipo_defensor`);
 
 --
--- Indices de la tabla `movimiento`
+-- Indices de la tabla `entrenador`
 --
-ALTER TABLE `movimiento`
+ALTER TABLE `entrenador`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_entrenador_pokemon1` (`pokemon1`),
+  ADD KEY `fk_entrenador_pokemon2` (`pokemon2`),
+  ADD KEY `fk_entrenador_pokemon3` (`pokemon3`),
+  ADD KEY `fk_entrenador_pokemon4` (`pokemon4`),
+  ADD KEY `fk_entrenador_pokemon5` (`pokemon5`),
+  ADD KEY `fk_entrenador_pokemon6` (`pokemon6`);
+
+--
+-- Indices de la tabla `pokemon`
+--
+ALTER TABLE `pokemon`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT de las tablas volcadas
+-- Restricciones para tablas volcadas
 --
 
 --
--- AUTO_INCREMENT de la tabla `movimiento`
+-- Filtros para la tabla `entrenador`
 --
-ALTER TABLE `movimiento`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+ALTER TABLE `entrenador`
+  ADD CONSTRAINT `fk_entrenador_pokemon1` FOREIGN KEY (`pokemon1`) REFERENCES `pokemon` (`id`),
+  ADD CONSTRAINT `fk_entrenador_pokemon2` FOREIGN KEY (`pokemon2`) REFERENCES `pokemon` (`id`),
+  ADD CONSTRAINT `fk_entrenador_pokemon3` FOREIGN KEY (`pokemon3`) REFERENCES `pokemon` (`id`),
+  ADD CONSTRAINT `fk_entrenador_pokemon4` FOREIGN KEY (`pokemon4`) REFERENCES `pokemon` (`id`),
+  ADD CONSTRAINT `fk_entrenador_pokemon5` FOREIGN KEY (`pokemon5`) REFERENCES `pokemon` (`id`),
+  ADD CONSTRAINT `fk_entrenador_pokemon6` FOREIGN KEY (`pokemon6`) REFERENCES `pokemon` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

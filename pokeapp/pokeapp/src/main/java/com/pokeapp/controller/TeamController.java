@@ -13,7 +13,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +30,26 @@ public class TeamController {
     private final PokemonService pokemonService = new PokemonService();
     private final List<Pokemon> catalogo = new ArrayList<>();
     private final List<ToggleButton> tarjetas = new ArrayList<>();
+    private boolean baseDisponible;
 
     @FXML
     public void initialize() {
-        catalogo.addAll(pokemonService.obtenerCatalogo());
-        for (Pokemon pokemon : catalogo) crearTarjetaPokemon(pokemon);
+        try {
+            catalogo.addAll(pokemonService.obtenerCatalogo());
+            if (catalogo.size() != 12) {
+                throw new SQLException("Se esperaban 12 Pokémon en la tabla pokemon y se encontraron " + catalogo.size() + ".");
+            }
+            baseDisponible = true;
+            for (Pokemon pokemon : catalogo) crearTarjetaPokemon(pokemon);
+            mensaje.setText("Catálogo cargado desde MySQL. Elegí tus seis Pokémon.");
+        } catch (SQLException ex) {
+            baseDisponible = false;
+            botonConfirmar.setDisable(true);
+            mensaje.setText("No se pudo cargar el catálogo de MySQL.");
+            mostrarAlerta(Alert.AlertType.ERROR, "NO SE PUDO CONECTAR A POKEAPP",
+                    "Revisá que MySQL esté iniciado, que hayas importado database/pokeapp.sql y que database.properties tenga tus datos.\n\nDetalle: "
+                            + ex.getMessage());
+        }
         actualizarContador();
     }
 
@@ -43,7 +61,8 @@ public class TeamController {
         tarjeta.setMaxSize(178, 166);
         tarjeta.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         tarjeta.setTooltip(new Tooltip(pokemon.getNombre() + " · " + pokemon.getTiposTexto()
-                + " · HP " + pokemon.getHpMaximo()));
+                + " · HP " + pokemon.getHpMaximo() + " · ATK " + pokemon.getAtaque()
+                + " · SPD " + pokemon.getVelocidad()));
 
         ImageView imagen = crearImagen(pokemon.getSpriteKey() + "-chibi.png", 105, 100);
         Label nombre = new Label(pokemon.getNombre());
@@ -59,7 +78,7 @@ public class TeamController {
                 tarjeta.setSelected(false);
                 mensaje.setText("El equipo ya tiene seis Pokémon. Deseleccioná uno para cambiarlo.");
             } else {
-                mensaje.setText("");
+                mensaje.setText("Datos obtenidos de MySQL. Cuando estés listo, confirmá el equipo.");
             }
             actualizarContador();
         });
@@ -80,8 +99,9 @@ public class TeamController {
 
     private Image cargarImagen(String archivo) {
         String ruta = "/com/pokeapp/sprites/" + archivo;
-        try {
-            return new Image(getClass().getResourceAsStream(ruta));
+        try (InputStream entrada = getClass().getResourceAsStream(ruta)) {
+            if (entrada == null) return null;
+            return new Image(entrada);
         } catch (Exception ex) {
             return null;
         }
@@ -96,7 +116,7 @@ public class TeamController {
     private void actualizarContador() {
         int seleccionados = contarSeleccionados();
         contador.setText("EQUIPO: " + seleccionados + " / 6");
-        botonConfirmar.setDisable(seleccionados != 6);
+        botonConfirmar.setDisable(!baseDisponible || seleccionados != 6);
     }
 
     @FXML
@@ -105,13 +125,30 @@ public class TeamController {
         for (int i = 0; i < tarjetas.size(); i++) {
             if (tarjetas.get(i).isSelected()) ids.add(catalogo.get(i).getIdPokemon());
         }
+
         try {
-            GameSession.setPartida(new PartidaService().crearPartida(nombreEntrenador.getText(), ids));
+            PartidaService partidaService = new PartidaService();
+            GameSession.setPartida(partidaService.crearPartida(nombreEntrenador.getText(), ids, catalogo));
             GameSession.setCombate(new CombateService().iniciarCombate(GameSession.getPartida()));
+            GameSession.setResultadoGuardado(false);
             App.setRoot("battle");
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException | IllegalStateException ex) {
             mensaje.setText(ex.getMessage());
+            mostrarAlerta(Alert.AlertType.WARNING, "REVISÁ LOS DATOS", ex.getMessage());
+        } catch (SQLException ex) {
+            mensaje.setText("No se pudo guardar el entrenador en MySQL.");
+            mostrarAlerta(Alert.AlertType.ERROR, "ERROR AL GUARDAR EL ENTRENADOR",
+                    "No se inició el combate porque no se pudo crear el registro en la tabla entrenador.\n\nDetalle: "
+                            + ex.getMessage());
         }
+    }
+
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String contenido) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(contenido);
+        alerta.showAndWait();
     }
 
     @FXML

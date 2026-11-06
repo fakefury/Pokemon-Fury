@@ -2,7 +2,13 @@ package com.pokeapp.controller;
 
 import com.pokeapp.App;
 import com.pokeapp.GameSession;
-import com.pokeapp.model.*;
+import com.pokeapp.dao.JugadorDAO;
+import com.pokeapp.exceptions.PokemonDebilitadoException;
+import com.pokeapp.exceptions.PpInsuficienteException;
+import com.pokeapp.model.Combate;
+import com.pokeapp.model.Movimiento;
+import com.pokeapp.model.PokemonJugador;
+import com.pokeapp.model.PokemonRival;
 import com.pokeapp.service.CombateService;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -11,8 +17,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.ToggleGroup;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -47,8 +55,11 @@ public class BattleController {
         if (GameSession.getPartida() == null || GameSession.getCombate() == null) {
             tituloResultado.setText("No hay una partida activa.");
             desactivarMovimientos();
+            botonVolver.setVisible(true);
+            botonVolver.setManaged(true);
             return;
         }
+
         elegirFondoAleatorio();
         crearBotonesEquipo();
         PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
@@ -91,7 +102,7 @@ public class BattleController {
             contenido.setAlignment(Pos.CENTER);
             boton.setGraphic(contenido);
             boton.setTooltip(new Tooltip(pokemon.getNombre() + " · " + pokemon.getTiposTexto()
-                    + " · " + pokemon.getHpMaximo() + " HP"));
+                    + " · HP " + pokemon.getHpMaximo()));
             boton.setOnAction(event -> seleccionarPokemon(indice));
             botonesEquipo[i] = boton;
             contenedorEquipo.add(boton, i % 3, i / 3);
@@ -100,28 +111,32 @@ public class BattleController {
 
     private void seleccionarPokemon(int indice) {
         if (indice < 0 || indice >= GameSession.getPartida().getEquipoJugador().size()) return;
-        PokemonJugador pokemon = GameSession.getPartida().getEquipoJugador().get(indice);
-        if (pokemon.estaDerrotado()) {
-            estado.setText("" + pokemon.getNombre() + " está debilitado. Elegí otro Pokémon.");
-            seleccionarBotonActivo();
-            return;
-        }
         if (indice != indiceSeleccionado) {
-            estado.setText(combateService.cambiarPokemon(GameSession.getCombate(), indice));
-            PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
-            if (activo != null) {
-                indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
+            try {
+                estado.setText(combateService.cambiarPokemon(GameSession.getCombate(), indice));
+            } catch (PokemonDebilitadoException ex) {
+                mostrarExcepcion("POKÉMON DEBILITADO", ex.getMessage());
+                seleccionarBotonActivo();
+                return;
+            } catch (SQLException ex) {
+                mostrarErrorBD(ex);
+                return;
+            } catch (IllegalStateException ex) {
+                mostrarExcepcion("COMBATE NO DISPONIBLE", ex.getMessage());
+                return;
             }
         }
+
+        PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
+        if (activo != null) indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
         seleccionarBotonActivo();
         actualizarPantalla();
+        comprobarFinalCombate();
     }
 
     private void seleccionarBotonActivo() {
         if (botonesEquipo == null) return;
-        for (int i = 0; i < botonesEquipo.length; i++) {
-            botonesEquipo[i].setSelected(i == indiceSeleccionado);
-        }
+        for (int i = 0; i < botonesEquipo.length; i++) botonesEquipo[i].setSelected(i == indiceSeleccionado);
     }
 
     private void configurarMovimiento(Button boton, Movimiento movimiento) {
@@ -132,41 +147,46 @@ public class BattleController {
             boton.setOnAction(null);
             return;
         }
-        boton.setText(movimiento.getNombre() + "  ·  " + movimiento.getTipo()
-                + "\nPP " + movimiento.getPpActual() + "/" + movimiento.getPpMax());
-        boton.setDisable(!combateActivo || !movimiento.tienePP());
+        // Se deja clickeable aunque tenga 0 PP para que la excepción se muestre dentro del juego.
+        String textoPp = movimiento.tienePP()
+                ? "PP " + movimiento.getPpActual() + "/" + movimiento.getPpMax()
+                : "SIN PP";
+        boton.setText(movimiento.getNombre() + "  ·  " + movimiento.getTipo() + "\n" + textoPp);
+        boton.setDisable(!combateActivo);
         boton.setOnAction(event -> ejecutarMovimiento(movimiento));
     }
 
     private void ejecutarMovimiento(Movimiento movimiento) {
         if (!"EN_PROCESO".equals(GameSession.getCombate().getResultado())) return;
-        PokemonJugador pokemon = GameSession.getPartida().getEquipoJugador().get(indiceSeleccionado);
-        if (pokemon.estaDerrotado()) {
-            estado.setText("Ese Pokémon está debilitado. Elegí otro.");
-            return;
+        try {
+            estado.setText(combateService.ejecutarMovimiento(GameSession.getCombate(), indiceSeleccionado, movimiento));
+            PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
+            if (activo != null) indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
+            seleccionarBotonActivo();
+            actualizarPantalla();
+            comprobarFinalCombate();
+        } catch (PokemonDebilitadoException ex) {
+            mostrarExcepcion("POKÉMON DEBILITADO", ex.getMessage());
+        } catch (PpInsuficienteException ex) {
+            mostrarExcepcion("PP INSUFICIENTES", ex.getMessage());
+        } catch (SQLException ex) {
+            mostrarErrorBD(ex);
+        } catch (IllegalStateException ex) {
+            mostrarExcepcion("COMBATE NO DISPONIBLE", ex.getMessage());
         }
-        String mensaje = combateService.ejecutarMovimiento(GameSession.getCombate(), indiceSeleccionado, movimiento);
-        estado.setText(mensaje);
-
-        PokemonJugador activo = combateService.obtenerJugadorActivo(GameSession.getCombate());
-        if (activo != null) {
-            indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(activo);
-        }
-        seleccionarBotonActivo();
-        actualizarPantalla();
     }
 
     private void actualizarPantalla() {
         if (GameSession.getCombate() == null || botonesEquipo == null) return;
         Combate combate = GameSession.getCombate();
         PokemonRival rival = combateService.obtenerRivalActivo(combate);
-        PokemonJugador jugador = GameSession.getPartida().getEquipoJugador().get(indiceSeleccionado);
-
+        PokemonJugador jugador = combateService.obtenerJugadorActivo(combate);
         etiquetaTurno.setText("TURNO " + combate.getTurnoActual());
+
         if (rival != null) {
             rivalNombre.setText(rival.getNombre() + "  ·  " + rival.getTiposTexto());
             rivalVida.setText("HP  " + rival.getHpActual() + " / " + rival.getHpMaximo());
-            rivalBarraVida.setProgress((double) rival.getHpActual() / rival.getHpMaximo());
+            rivalBarraVida.setProgress(ratioVida(rival.getHpActual(), rival.getHpMaximo()));
             rivalSprite.setImage(cargarImagen(rival.getSpriteKey() + ".png"));
         } else {
             rivalNombre.setText("Equipo rival derrotado");
@@ -176,36 +196,66 @@ public class BattleController {
         }
 
         if (jugador != null) {
+            indiceSeleccionado = GameSession.getPartida().getEquipoJugador().indexOf(jugador);
             jugadorNombre.setText(jugador.getNombre() + "  ·  " + jugador.getTiposTexto());
             jugadorVida.setText("HP  " + jugador.getHpActual() + " / " + jugador.getHpMaximo());
-            jugadorBarraVida.setProgress((double) jugador.getHpActual() / jugador.getHpMaximo());
+            jugadorBarraVida.setProgress(ratioVida(jugador.getHpActual(), jugador.getHpMaximo()));
             jugadorSprite.setImage(cargarImagen(jugador.getSpriteKey() + "-back.png"));
-        }
-
-        for (int i = 0; i < botonesEquipo.length; i++) {
-            PokemonJugador integrante = GameSession.getPartida().getEquipoJugador().get(i);
-            botonesEquipo[i].setDisable(integrante.estaDerrotado() || !"EN_PROCESO".equals(combate.getResultado()));
-            botonesEquipo[i].setOpacity(integrante.estaDerrotado() ? 0.42 : 1.0);
-            botonesEquipo[i].setSelected(i == indiceSeleccionado);
-        }
-
-        boolean finalizado = !"EN_PROCESO".equals(combate.getResultado());
-        if (finalizado) {
-            tituloResultado.setText("VICTORIA".equals(combate.getResultado())
-                    ? "¡VICTORIA! ¡GANASTE!" : "DERROTA · SE TERMINÓ EL COMBATE");
-            tituloResultado.getStyleClass().remove("battle-result-hidden");
-            desactivarMovimientos();
-            botonVolver.setVisible(true);
-            botonVolver.setManaged(true);
-        } else {
-            tituloResultado.setText("ELEGÍ UN MOVIMIENTO");
-            botonVolver.setVisible(false);
-            botonVolver.setManaged(false);
             Movimiento[] movimientos = jugador.getMovimientos();
             configurarMovimiento(btnMov1, movimientos[0]);
             configurarMovimiento(btnMov2, movimientos[1]);
             configurarMovimiento(btnMov3, movimientos[2]);
             configurarMovimiento(btnMov4, movimientos[3]);
+        } else {
+            jugadorNombre.setText("EQUIPO DEBILITADO");
+            jugadorVida.setText("HP  0 / 0");
+            jugadorBarraVida.setProgress(0);
+            jugadorSprite.setImage(null);
+            desactivarMovimientos();
+        }
+
+        for (int i = 0; i < botonesEquipo.length; i++) {
+            PokemonJugador integrante = GameSession.getPartida().getEquipoJugador().get(i);
+            // No se deshabilitan los debilitados: al pulsarlos se muestra PokemonDebilitadoException.
+            botonesEquipo[i].setDisable(!"EN_PROCESO".equals(combate.getResultado()));
+            botonesEquipo[i].setOpacity(integrante.estaDerrotado() ? 0.42 : 1.0);
+            botonesEquipo[i].setSelected(i == indiceSeleccionado);
+        }
+
+        if (!"EN_PROCESO".equals(combate.getResultado())) {
+            tituloResultado.setText("VICTORIA".equals(combate.getResultado())
+                    ? "¡VICTORIA! ¡GANASTE!" : "DERROTA · SE TERMINÓ EL COMBATE");
+            desactivarMovimientos();
+            botonVolver.setVisible(true);
+            botonVolver.setManaged(true);
+        }
+    }
+
+    private double ratioVida(int actual, int maximo) {
+        return maximo <= 0 ? 0.0 : Math.max(0.0, Math.min(1.0, (double) actual / maximo));
+    }
+
+    private void comprobarFinalCombate() {
+        String resultado = GameSession.getCombate().getResultado();
+        if ("EN_PROCESO".equals(resultado)) return;
+
+        if (!GameSession.isResultadoGuardado()) {
+            try {
+                int idEntrenador = GameSession.getPartida().getJugador().getIdJugador();
+                new JugadorDAO().actualizarCampeon(idEntrenador, "VICTORIA".equals(resultado));
+                GameSession.setResultadoGuardado(true);
+            } catch (SQLException ex) {
+                GameSession.setResultadoGuardado(true);
+                mostrarErrorBD(ex);
+            }
+        }
+
+        if ("VICTORIA".equals(resultado)) {
+            try {
+                App.setRoot("victory");
+            } catch (IOException ex) {
+                mostrarExcepcion("NO SE PUDO ABRIR LA PANTALLA DE VICTORIA", ex.getMessage());
+            }
         }
     }
 
@@ -226,11 +276,29 @@ public class BattleController {
     }
 
     private Image cargarImagen(String archivo) {
-        try {
-            return new Image(getClass().getResourceAsStream("/com/pokeapp/sprites/" + archivo));
+        String ruta = "/com/pokeapp/sprites/" + archivo;
+        try (InputStream entrada = getClass().getResourceAsStream(ruta)) {
+            return entrada == null ? null : new Image(entrada);
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    private void mostrarExcepcion(String titulo, String mensaje) {
+        estado.setText(mensaje);
+        Alert alerta = new Alert(Alert.AlertType.WARNING);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+
+    private void mostrarErrorBD(SQLException ex) {
+        Alert alerta = new Alert(Alert.AlertType.ERROR);
+        alerta.setTitle("ERROR DE BASE DE DATOS");
+        alerta.setHeaderText("No se pudo completar la operación en MySQL.");
+        alerta.setContentText(ex.getMessage());
+        alerta.showAndWait();
     }
 
     @FXML

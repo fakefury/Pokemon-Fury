@@ -204,3 +204,59 @@
 .hp-bar { -fx-accent: #4b8f28; -fx-control-inner-background: #dce9ae; -fx-pref-height: 12px; }
 .hp-bar > .track { -fx-background-color: #6e7f53; -fx-background-radius: 0; }
 .hp-bar > .bar { -fx-background-color: #4b8f28; -fx-background-radius: 0; -fx-background-insets: 0; }
+
+/* Pantalla de victoria: mantiene el mismo marco y paleta de la Game Boy. */
+.victory-content {
+    -fx-padding: 22 26 24 26;
+    -fx-background-color: #24382b;
+}
+.victory-title-box {
+    -fx-background-color: #9bbc0f;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 4;
+    -fx-padding: 17 24 17 24;
+    -fx-max-width: 780;
+}
+.victory-title {
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 34px;
+    -fx-font-weight: 900;
+}
+.victory-trainer {
+    -fx-text-fill: #306230;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.victory-description {
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+}
+.victory-section-title {
+    -fx-text-fill: #dce9ae;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.victory-scroll, .victory-scroll > .viewport {
+    -fx-background-color: #24382b;
+}
+.victory-scroll {
+    -fx-pref-height: 390px;
+    -fx-max-width: 680px;
+}
+.victory-pokemon-card {
+    -fx-background-color: #dce9ae;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 3;
+    -fx-padding: 5;
+}
+.victory-pokemon-name {
+    -fx-text-fill: #0f380f;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.victory-pokemon-type, .victory-pokemon-hp {
+    -fx-text-fill: #45633b;
+    -fx-font-size: 10px;
+}

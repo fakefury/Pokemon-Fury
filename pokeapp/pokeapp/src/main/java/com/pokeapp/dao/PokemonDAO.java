@@ -1,56 +1,133 @@
 package com.pokeapp.dao;
 
+import com.pokeapp.config.ConexionBD;
 import com.pokeapp.model.Movimiento;
 import com.pokeapp.model.Pokemon;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-/** Catálogo local del juego. No requiere instalar ni configurar MySQL. */
+/** Lee el catálogo, las estadísticas y los cuatro movimientos directamente desde MySQL. */
 public class PokemonDAO {
-    private final List<Pokemon> catalogo = crearCatalogo();
+    private static final Map<String, String> TIPOS_MOVIMIENTO = crearTiposMovimiento();
+    private static final Map<String, Integer> POTENCIAS = crearPotencias();
 
-    public List<Pokemon> obtenerTodos() {
-        List<Pokemon> copia = new ArrayList<>();
-        for (Pokemon pokemon : catalogo) copia.add(pokemon.copiar());
-        return copia;
+    private static final String CONSULTA_CATALOGO =
+            "SELECT p.id, p.nombre, p.tipo, p.atk, p.hp, p.spd, "
+            + "m1.nombre AS mov1_nombre, m1.pp AS mov1_pp, m1.hace_dano AS mov1_dano, "
+            + "m2.nombre AS mov2_nombre, m2.pp AS mov2_pp, m2.hace_dano AS mov2_dano, "
+            + "m3.nombre AS mov3_nombre, m3.pp AS mov3_pp, m3.hace_dano AS mov3_dano, "
+            + "m4.nombre AS mov4_nombre, m4.pp AS mov4_pp, m4.hace_dano AS mov4_dano "
+            + "FROM pokemon p "
+            + "LEFT JOIN movimiento m1 ON m1.nombre = p.movimiento_1 "
+            + "LEFT JOIN movimiento m2 ON m2.nombre = p.movimiento_2 "
+            + "LEFT JOIN movimiento m3 ON m3.nombre = p.movimiento_3 "
+            + "LEFT JOIN movimiento m4 ON m4.nombre = p.movimiento_4 "
+            + "ORDER BY p.id";
+
+    public List<Pokemon> obtenerTodos() throws SQLException {
+        List<Pokemon> catalogo = new ArrayList<>();
+
+        try (Connection conexion = ConexionBD.Conectar();
+             PreparedStatement consulta = conexion.prepareStatement(CONSULTA_CATALOGO);
+             ResultSet resultado = consulta.executeQuery()) {
+
+            while (resultado.next()) {
+                String nombre = resultado.getString("nombre");
+                String tipo = resultado.getString("tipo");
+                Movimiento[] movimientos = new Movimiento[4];
+                for (int i = 1; i <= 4; i++) {
+                    movimientos[i - 1] = crearMovimiento(resultado, "mov" + i, tipo);
+                }
+
+                int hp = resultado.getInt("hp");
+                // La tabla pokemon no guarda defensa ni nivel: se usa HP como defensa base y nivel 30.
+                int defensaBase = Math.max(35, hp);
+                String spriteKey = obtenerClaveSprite(nombre);
+
+                Pokemon pokemon = new Pokemon(
+                        resultado.getInt("id"), nombre, tipo, null, 30,
+                        hp, resultado.getInt("atk"), defensaBase,
+                        resultado.getInt("spd"), spriteKey, movimientos
+                );
+                catalogo.add(pokemon);
+            }
+        }
+
+        if (catalogo.isEmpty()) {
+            throw new SQLException("La tabla pokemon no contiene registros. Importá el archivo database/pokeapp.sql.");
+        }
+        return catalogo;
     }
 
-    private List<Pokemon> crearCatalogo() {
-        List<Pokemon> lista = new ArrayList<>();
-        lista.add(p(1, "Dugtrio", "TIERRA", null, 82, 80, 62, 105, "dugtrio",
-                m("Excavar", "TIERRA", 70, 15), m("Terremoto", "TIERRA", 90, 10), m("Corte", "NORMAL", 50, 25), m("Avalancha", "ROCA", 65, 15)));
-        lista.add(p(2, "Electrode", "ELÉCTRICO", null, 78, 75, 58, 125, "electrode",
-                m("Rayo", "ELÉCTRICO", 80, 15), m("Chispa", "ELÉCTRICO", 55, 25), m("Bola Voltio", "ELÉCTRICO", 70, 15), m("Placaje", "NORMAL", 40, 35)));
-        lista.add(p(3, "Haunter", "FANTASMA", "VENENO", 76, 92, 58, 95, "haunter",
-                m("Bola Sombra", "FANTASMA", 80, 15), m("Bomba Lodo", "VENENO", 75, 15), m("Lengüetazo", "FANTASMA", 45, 25), m("Tinieblas", "FANTASMA", 60, 20)));
-        lista.add(p(4, "Hitmonchan", "LUCHA", null, 84, 88, 82, 72, "hitmonchan",
-                m("Puño Fuego", "FUEGO", 70, 15), m("Puño Hielo", "HIELO", 70, 15), m("Puño Trueno", "ELÉCTRICO", 70, 15), m("Golpe Karate", "LUCHA", 65, 20)));
-        lista.add(p(5, "Hypno", "PSÍQUICO", null, 88, 80, 92, 67, "hypno-f",
-                m("Psíquico", "PSÍQUICO", 85, 10), m("Confusión", "PSÍQUICO", 55, 25), m("Puño Fuego", "FUEGO", 70, 15), m("Golpe Cabeza", "NORMAL", 65, 20)));
-        lista.add(p(6, "Ninetales", "FUEGO", null, 82, 91, 72, 100, "ninetales",
-                m("Lanzallamas", "FUEGO", 85, 10), m("Ascuas", "FUEGO", 50, 25), m("Rapidez", "NORMAL", 60, 20), m("Mordisco", "NORMAL", 60, 20)));
-        lista.add(p(7, "Onix", "ROCA", "TIERRA", 105, 65, 110, 40, "onix",
-                m("Roca Afilada", "ROCA", 85, 10), m("Excavar", "TIERRA", 70, 15), m("Avalancha", "ROCA", 65, 15), m("Placaje", "NORMAL", 40, 35)));
-        lista.add(p(8, "Parasect", "BICHO", "PLANTA", 90, 88, 82, 35, "parasect",
-                m("Tijera X", "BICHO", 80, 15), m("Bomba Germen", "PLANTA", 80, 15), m("Corte", "NORMAL", 50, 25), m("Gigadrenado", "PLANTA", 75, 10)));
-        lista.add(p(9, "Pidgeot", "NORMAL", "VOLADOR", 86, 90, 78, 100, "pidgeot",
-                m("Ataque Ala", "VOLADOR", 60, 25), m("Tornado", "VOLADOR", 55, 20), m("Ataque Rápido", "NORMAL", 45, 30), m("Pico Taladro", "VOLADOR", 80, 15)));
-        lista.add(p(10, "Starmie", "AGUA", "PSÍQUICO", 82, 88, 82, 115, "starmie",
-                m("Surf", "AGUA", 85, 10), m("Hidrobomba", "AGUA", 95, 5), m("Psicorrayo", "PSÍQUICO", 65, 20), m("Rayo Hielo", "HIELO", 75, 15)));
-        lista.add(p(11, "Tangela", "PLANTA", null, 94, 78, 105, 60, "tangela",
-                m("Latigazo", "PLANTA", 80, 15), m("Hoja Aguda", "PLANTA", 75, 15), m("Bomba Germen", "PLANTA", 80, 15), m("Poder Pasado", "ROCA", 60, 15)));
-        lista.add(p(12, "Weezing", "VENENO", null, 92, 95, 112, 60, "weezing",
-                m("Bomba Lodo", "VENENO", 80, 15), m("Gas Venenoso", "VENENO", 50, 25), m("Autodestrucción", "NORMAL", 100, 5), m("Lanzallamas", "FUEGO", 75, 15)));
-        return lista;
+    private Movimiento crearMovimiento(ResultSet resultado, String prefijo, String tipoPokemon) throws SQLException {
+        String nombre = resultado.getString(prefijo + "_nombre");
+        if (nombre == null || nombre.trim().isEmpty()) return null;
+
+        int pp = resultado.getInt(prefijo + "_pp");
+        boolean haceDano = resultado.getBoolean(prefijo + "_dano");
+        String clave = normalizar(nombre);
+        String tipoMovimiento = TIPOS_MOVIMIENTO.getOrDefault(clave, tipoPokemon);
+        int potencia = haceDano ? POTENCIAS.getOrDefault(clave, 60) : 0;
+
+        return new Movimiento(nombre, tipoMovimiento, potencia, pp, haceDano);
     }
 
-    private Pokemon p(int id, String nombre, String tipo1, String tipo2, int hp,
-                      int ataque, int defensa, int velocidad, String sprite, Movimiento... movimientos) {
-        return new Pokemon(id, nombre, tipo1, tipo2, 30, hp, ataque, defensa, velocidad, sprite, movimientos);
+    private String obtenerClaveSprite(String nombre) {
+        String clave = normalizar(nombre).replace(' ', '-');
+        if ("hypno".equals(clave)) return "hypno-f";
+        return clave;
     }
 
-    private Movimiento m(String nombre, String tipo, int potencia, int pp) {
-        return new Movimiento(nombre, tipo, potencia, pp, true);
+    private static String normalizar(String texto) {
+        String sinAcentos = Normalizer.normalize(texto == null ? "" : texto, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return sinAcentos.toLowerCase(Locale.ROOT).trim();
+    }
+
+    private static Map<String, String> crearTiposMovimiento() {
+        Map<String, String> mapa = new HashMap<>();
+        poner(mapa, "Fantasma", "Lengüetazo", "Tinieblas", "Rayo Confuso");
+        poner(mapa, "Psíquico", "Hipnosis", "Psíquico", "Confusión", "Anulación", "Recuperación");
+        poner(mapa, "Roca", "Lanza Rocas", "Tornillo Roca");
+        poner(mapa, "Bicho", "Chupavidas");
+        poner(mapa, "Planta", "Espora", "Rayo Solar", "Látigo Cepa", "Megagotar", "Atadura");
+        poner(mapa, "Eléctrico", "Paralizador", "Rayo", "Trueno", "Onda Voltio");
+        poner(mapa, "Volador", "Ataque Ala", "Vuelo", "Torbellino");
+        poner(mapa, "Tierra", "Terremoto", "Excavar", "Ataque Arena", "Fisura");
+        poner(mapa, "Veneno", "Residuos", "Tóxico", "Polución");
+        poner(mapa, "Lucha", "Golpe Kárate", "Sumisión", "Movimiento Sísmico", "Contador");
+        poner(mapa, "Fuego", "Lanzallamas", "Ascuas", "Llamarada");
+        poner(mapa, "Agua", "Surf", "Hidrobomba");
+        poner(mapa, "Hielo", "Rayo Hielo");
+        poner(mapa, "Normal", "Chirrido", "Fortaleza", "Agilidad", "Autodestrucción");
+        return mapa;
+    }
+
+    private static Map<String, Integer> crearPotencias() {
+        Map<String, Integer> mapa = new HashMap<>();
+        potencia(mapa, 95, "Hidrobomba", "Llamarada", "Fisura");
+        potencia(mapa, 90, "Terremoto", "Rayo Solar", "Trueno", "Autodestrucción");
+        potencia(mapa, 85, "Lanzallamas", "Surf", "Psíquico");
+        potencia(mapa, 80, "Chupavidas", "Rayo", "Látigo Cepa", "Megagotar", "Hidrobomba");
+        potencia(mapa, 70, "Excavar", "Vuelo", "Lanza Rocas", "Sumisión");
+        potencia(mapa, 45, "Lengüetazo", "Ataque Arena", "Ascuas");
+        return mapa;
+    }
+
+    private static void poner(Map<String, String> mapa, String tipo, String... movimientos) {
+        for (String movimiento : movimientos) mapa.put(normalizar(movimiento), tipo);
+    }
+
+    private static void potencia(Map<String, Integer> mapa, int potencia, String... movimientos) {
+        for (String movimiento : movimientos) mapa.put(normalizar(movimiento), potencia);
     }
 }

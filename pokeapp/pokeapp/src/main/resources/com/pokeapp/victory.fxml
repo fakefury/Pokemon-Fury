@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.pokeapp.controller.VictoryController" styleClass="game-root">
+    <top>
+        <VBox spacing="6" styleClass="screen-header">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="POKÉMON FURY" styleClass="header-brand" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="SALA DE CAMPEONES" styleClass="header-chip" />
+            </HBox>
+            <Label text="LA BATALLA TERMINÓ Y TU EQUIPO SE QUEDÓ CON LA VICTORIA." styleClass="header-description" />
+        </VBox>
+    </top>
+    <center>
+        <VBox alignment="CENTER" spacing="15" styleClass="victory-content">
+            <VBox alignment="CENTER" spacing="7" styleClass="victory-title-box">
+                <Label text="★  ¡CAMPEÓN!  ★" styleClass="victory-title" />
+                <Label fx:id="nombreEntrenador" text="ENTRENADOR" styleClass="victory-trainer" />
+                <Label fx:id="resumenVictoria" text="Derrotaste a los seis Pokémon rivales." wrapText="true"
+                       styleClass="victory-description" />
+            </VBox>
+            <Label text="TU EQUIPO CAMPEÓN" styleClass="victory-section-title" />
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="victory-scroll">
+                <content>
+                    <TilePane fx:id="equipoCampeon" prefColumns="3" hgap="14" vgap="14"
+                              alignment="CENTER" tileAlignment="CENTER" prefTileWidth="190" prefTileHeight="178" />
+                </content>
+            </ScrollPane>
+            <Button text="VOLVER AL MENÚ PRINCIPAL" onAction="#volverMenu"
+                    styleClass="game-button primary-game-button" />
+        </VBox>
+    </center>
+</BorderPane>
